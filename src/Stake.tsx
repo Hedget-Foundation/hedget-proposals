@@ -8,7 +8,7 @@ import {
   Button,
   Typography,
   CircularProgress,
-  makeStyles,
+  makeStyles, Paper,
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { util } from 'postchain-client';
@@ -56,7 +56,9 @@ const StakeMain: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const needRefresh =
     loginAPI?.stakeState &&
-    (accountState.accountDetail == null || accountState.accountDetail.validUntil !== loginAPI.stakeState.until);
+    (!accountState.isChecked ||
+      accountState.accountDetail == null ||
+      accountState.accountDetail.validUntil !== loginAPI.stakeState.until);
 
   React.useEffect(() => {
     if (!initialized && loginAPI) {
@@ -142,18 +144,29 @@ const StakeMain: React.FunctionComponent = () => {
         )}
         {loginAPI?.stakeState && (
           <Grid item xs={12}>
-            <div>
-              <Typography variant="body2" component="p">
-                <span className={classes.stakedTokens}>Tokens: </span>
-                {loginAPI.stakeState.amount} HGET
-              </Typography>
-            </div>
-            <div>
-              <Typography variant="body2">
-                <span className={classes.stakedTokens}>Until: </span>
-                {new Date(loginAPI.stakeState.until * 1000).toLocaleDateString(window.navigator.language)}
-              </Typography>
-            </div>
+            <Paper style={{padding: "12px"}}>
+              <div>
+                <Typography variant="h6">Status</Typography>
+              </div>
+              <div>
+                <Typography variant="body2" component="p">
+                  <span className={classes.stakedTokens}>Staked tokens: </span>
+                  {loginAPI.stakeState.amount} HGET
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="body2">
+                  <span className={classes.stakedTokens}>Frozen until: </span>
+                  {new Date(loginAPI.stakeState.until * 1000).toLocaleDateString(window.navigator.language)}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="body2" component="p">
+                  <span className={classes.stakedTokens}>Logged in: </span>
+                  {accountState.isChecked ? 'yes' : 'no'}
+                </Typography>
+              </div>
+            </Paper>
           </Grid>
         )}
         {needRefresh && (
@@ -201,7 +214,7 @@ const StakeMain: React.FunctionComponent = () => {
               disabled={loading}
               className={classes.button}
             >
-              {loading ? <CircularProgress size={24} /> : <span>Stake</span>}
+              {loading ? <CircularProgress size={24} /> : <span>{loginAPI?.stakeState ? 'Re-stake' : 'Stake'}</span>}
             </Button>
             {stakeError && (
               <Typography variant="body2" color="error" className={classes.message}>

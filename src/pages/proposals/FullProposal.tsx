@@ -6,7 +6,7 @@ import TimerIcon from '@material-ui/icons/Timer';
 import EventIcon from '@material-ui/icons/Event';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { RouteComponentProps } from 'react-router';
-import { Typography, makeStyles } from '@material-ui/core';
+import {Typography, makeStyles, Container} from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import useTheme from '@material-ui/core/styles/useTheme';
@@ -25,6 +25,8 @@ import PollVoteOption from './poll/PollVoteOption';
 import ApplicationState from '../../core/redux/application-state';
 import { COLOR_RED } from '../../core/dynamic-theme/DefaultTheme';
 import { formatedAuthor } from './util';
+import {Link as RouterLink} from "react-router-dom";
+import Box from "@material-ui/core/Box";
 
 interface MatchParams {
   id: string;
@@ -126,6 +128,11 @@ const FullProposal: React.FunctionComponent<RouteComponentProps<MatchParams>> = 
 
   return (
     <div>
+      <Container>
+        <RouterLink to="/">
+          <Typography variant="h6">{"<<<"}</Typography>
+        </RouterLink>
+      </Container>
       <Typography variant="h5" component="span">
         <b>{proposal.id}:</b> {proposal.title}
       </Typography>
@@ -189,6 +196,11 @@ const FullProposal: React.FunctionComponent<RouteComponentProps<MatchParams>> = 
         {total !== 0 && (
           <Grid item xs={12} md={6}>
             {renderPollStats(total)}
+          </Grid>
+        )}
+        {total === 0 && (
+          <Grid item xs={12}>
+            <Typography variant="h5">No votes so far</Typography>
           </Grid>
         )}
         {accountState.isChecked &&

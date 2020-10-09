@@ -35,7 +35,7 @@ const Logo: React.FunctionComponent = () => {
   return (
     <Box className={classes.logoWrapper}>
       <RouterLink to="/">
-        <img src="/assets/hedget-logo.png" alt="Hedget logo" className={classes.image} />
+        <img src="assets/hedget-logo.png" alt="Hedget logo" className={classes.image} />
       </RouterLink>
     </Box>
   );
