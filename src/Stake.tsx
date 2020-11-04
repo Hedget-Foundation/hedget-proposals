@@ -1,14 +1,15 @@
 import React from 'react';
 import {
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
   Button,
-  Typography,
   CircularProgress,
-  makeStyles, Paper,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  makeStyles,
+  Paper,
+  TextField,
+  Typography,
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { util } from 'postchain-client';
@@ -54,8 +55,15 @@ const StakeMain: React.FunctionComponent = () => {
   const contracts = loginAPI?.contracts;
   const accountState = useSelector((state: ApplicationState) => state.account);
   const dispatch = useDispatch();
+  const canWithdraw =
+    loginAPI &&
+    loginAPI.stakeState &&
+    new Date(loginAPI.stakeState.until * 1000) < new Date() &&
+    loginAPI.stakeState.amount > 0;
+
   const needRefresh =
     loginAPI?.stakeState &&
+    canWithdraw &&
     (!accountState.isChecked ||
       accountState.accountDetail == null ||
       accountState.accountDetail.validUntil !== loginAPI.stakeState.until);
@@ -116,16 +124,28 @@ const StakeMain: React.FunctionComponent = () => {
     }
     try {
       // TODO: do not allow to reduce duration
-      const actualStakeAmount = stakeAmount * 1000000;
+      const actualStakeAmount = Math.round(stakeAmount * 1000000);
       const allowance = await contracts.hget.getAllowance(selectedAddress);
       setLoading(true);
       if (allowance < actualStakeAmount) {
         await contracts.hget.approve(selectedAddress, actualStakeAmount);
       }
       const stakeUntilDate = Math.round(Date.now() / 1000 + duration * 86400);
-      await contracts.staker.stake(selectedAddress, stakeAmount, stakeUntilDate);
+      await contracts.staker.stake(selectedAddress, actualStakeAmount, stakeUntilDate);
       await updateStakeState();
       await login(stakeUntilDate);
+    } catch (e) {
+      setStakeError(`Error: ${e.message}`);
+    }
+    setLoading(false);
+  }
+
+  async function unstake () {
+    if (stakeError !== '') setStakeError('');
+    setLoading(true);
+    try {
+      await contracts.staker.withdraw(selectedAddress);
+      await updateStakeState();
     } catch (e) {
       setStakeError(`Error: ${e.message}`);
     }
@@ -144,7 +164,7 @@ const StakeMain: React.FunctionComponent = () => {
         )}
         {loginAPI?.stakeState && (
           <Grid item xs={12}>
-            <Paper style={{padding: "12px"}}>
+            <Paper style={{ padding: '12px' }}>
               <div>
                 <Typography variant="h6">Status</Typography>
               </div>
@@ -155,10 +175,16 @@ const StakeMain: React.FunctionComponent = () => {
                 </Typography>
               </div>
               <div>
-                <Typography variant="body2">
-                  <span className={classes.stakedTokens}>Frozen until: </span>
-                  {new Date(loginAPI.stakeState.until * 1000).toLocaleDateString(window.navigator.language)}
-                </Typography>
+                {canWithdraw ? (
+                  <span className={classes.stakedTokens} color="primary">
+                    Not locked
+                  </span>
+                ) : (
+                  <>
+                    <span className={classes.stakedTokens}>Locked until: </span>
+                    {new Date(loginAPI.stakeState.until * 1000).toLocaleDateString(window.navigator.language)}
+                  </>
+                )}
               </div>
               <div>
                 <Typography variant="body2" component="p">
@@ -195,7 +221,7 @@ const StakeMain: React.FunctionComponent = () => {
               type="number"
               value={stakeAmount}
               inputProps={{ min: 10 }}
-              onChange={(e) => setStakeAmount(parseInt(e.target.value))}
+              onChange={(e) => setStakeAmount(parseFloat(e.target.value))}
               className={classes.textInput}
             />
             <TextField
@@ -223,6 +249,19 @@ const StakeMain: React.FunctionComponent = () => {
             )}
           </div>
         </Grid>
+        {canWithdraw && (
+          <Grid item container>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => unstake()}
+              disabled={loading}
+              className={classes.button}
+            >
+              {loading ? <CircularProgress size={24} /> : <span>Withdraw stake</span>}
+            </Button>
+          </Grid>
+        )}
       </Grid>
     );
   };

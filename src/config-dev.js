@@ -1,6 +1,6 @@
 module.exports = {
   blockchain: {
-    nodeApiUrl: 'http://35.205.218.13:7740',
+    nodeApiUrl: 'https://hedget.com/proposals/node/',
     rid: '57862189D255A82ED1DCCD925BD9F02DE8CFD32CF94D43022D68ED839FB91E01',
     explorerBaseUrl: 'https://explorer-testnet.chromia.com/',
   },
@@ -9,7 +9,7 @@ module.exports = {
     stakerContractAddress: '0xac9f425b4255ac392987af4447478f06bed3b786',
   },
   authServer: {
-    url: 'http://35.205.218.13:8080',
+    url: 'https://hedget.com/proposals/auth/',
   },
   matomo: {
     enabled: false,

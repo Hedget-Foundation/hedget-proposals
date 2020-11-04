@@ -14,7 +14,7 @@ export default class Staker {
 
     if (amount === 0 && until === 0) return null;
     return {
-      amount,
+      amount: amount/1000000,
       until,
       isFresh: Date.now() + 86400 * 7 * 1000 > until * 1000,
     };
@@ -22,6 +22,9 @@ export default class Staker {
 
   async stake(address, amount, until) {
     await this.contract.methods.stake(amount, until).send({ from: address });
-    return this.getStakeState(address);
+  }
+
+  async withdraw(address) {
+    await this.contract.methods.withdraw(address).send({ from: address });
   }
 }
